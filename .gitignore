@@ -1,0 +1,33 @@
+# Backend
+target/
+*.class
+*.jar
+*.war
+backend/encrypted-files/
+
+# Server generated data
+data/
+uploads/
+keystore/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# OS
+.DS_Store
+Thumbs.db
+*.log
+
+# Env
+.env
+*.env
+
+# Agents
+.agents/

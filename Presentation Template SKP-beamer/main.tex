@@ -1,0 +1,173 @@
+\documentclass{SKP-beamer}
+
+% --------------------------------------------------- %
+\title[Cloud File Security]{Cloud Based File Security System with Hybrid Encryption}
+\subtitle{PPD-II First Review \hspace{0.3cm} | \hspace{0.3cm} PID: 23CSEP03}
+\author[23CSEP03]{PID: 23CSEP03 \\[0.3cm] \small{Ashish Kumar (2301341013)} \\[0.1cm] \small{Ashish Singh (2301341014)} \\[0.1cm] \small{Avee Ranjan (2301341016)} \\[0.1cm] \small{Ayshi Shannidhya Panda (2301341017)} \\[0.3cm] \small{Under the guidance of} \\ \textbf{Mrs. Snehanjali Pradhan}}
+\institute[SIT]{
+  Silicon Institute of Technology
+}
+\date{August 2026}
+\logo{
+\includegraphics[scale=0.2]{sitlogo.png}
+}
+\subject{Cloud Based File Security System with Hybrid Encryption -- PPD-II}
+
+% --------------------------------------------------- %
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% =================== OUTLINE =================== %
+\begin{frame}{}
+\begin{enumerate}
+  \item Problem Identification
+  \item Objectives
+  \item Literature Review
+  \item Research Gap
+  \item Methodology
+  \item Work Plan
+  \item References
+\end{enumerate}
+\end{frame}
+
+% =================== 1: PROBLEM IDENTIFICATION =================== %
+\section{Problem Identification}
+\begin{frame}{}
+\begin{itemize}
+  \item Cloud storage faces \alert{data breaches} and unauthorized access
+  \item Data is vulnerable to interception during transmission and compromise at rest
+  \item Single encryption is insufficient --- AES has key distribution issues; RSA is too slow for large files
+\end{itemize}
+\end{frame}
+
+% =================== 2: OBJECTIVES =================== %
+\section{Objectives}
+\begin{frame}{}
+\begin{itemize}
+  \item Develop a \textbf{hybrid encryption system} combining AES and RSA
+  \item Implement \textbf{user authentication} with secure password hashing
+  \item Enable \textbf{encrypted file upload/download} with client-side encryption
+  \item Design \textbf{secure key management} for key generation, storage, and distribution
+  \item Implement \textbf{controlled file sharing} via public-key cryptography
+\end{itemize}
+\end{frame}
+
+% =================== 3: LITERATURE REVIEW =================== %
+\section{Literature Review}
+\begin{frame}{}
+\begin{itemize}
+  \item \textbf{Subashini \& Kavitha (2011)}: Surveyed cloud security issues; identified data confidentiality as a major challenge
+  \item \textbf{Kamara \& Lauter (2010)}: Proposed client-side encryption with secure key wrapping for cloud storage
+  \item \textbf{Hashizume et al. (2013)}: Analyzed cloud vulnerabilities; recommended layered security approaches
+  \item \textbf{Singh et al. (2012)}: Highlighted the need for combining symmetric and asymmetric encryption
+  \item \textbf{Kumar et al. (2019)}: Concluded client-side hybrid encryption offers strongest cloud protection
+  \item \textbf{NIST SP 800-57 (2020)}: Recommends AES-256 and RSA-2048 for secure systems
+\end{itemize}
+\end{frame}
+
+% =================== 4: RESEARCH GAP =================== %
+\section{Research Gap}
+\begin{frame}{}
+\begin{itemize}
+  \item Most systems rely on \textbf{server-side encryption} --- provider controls keys
+  \item Hybrid encryption studies are mostly \textbf{theoretical}, lacking working implementations
+  \item Few systems integrate \textbf{encryption, authentication, key management, and sharing} together
+  \item Existing tools require \textbf{manual key management}, leading to human error
+  \item File sharing depends on \textbf{password sharing} rather than cryptographic key exchange
+\end{itemize}
+\end{frame}
+
+% =================== 5: METHODOLOGY (4 slides) =================== %
+\section{Methodology}
+\begin{frame}{How Do We Solve This Problem?}
+\begin{itemize}
+  \item \textbf{Hybrid encryption}: AES for fast data encryption + RSA for secure key exchange
+  \item \textbf{Client-side encryption}: files encrypted before upload
+  \item \textbf{User authentication} with secure password hashing
+  \item \textbf{Automated key management}: generation, storage, and distribution
+  \item \textbf{Controlled file sharing} via RSA key re-encryption
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{System Architecture}
+\begin{block}{System Components}
+\small
+\begin{tabular}{@{}ll@{}}
+\textbf{Client Application} & Login, file upload, download, sharing \\[0.3em]
+\textbf{Authentication Module} & Registration, login, session management \\[0.3em]
+\textbf{Encryption Engine} & AES (data encryption) + RSA (key wrapping) \\[0.3em]
+\textbf{Key Management} & Key generation, storage, distribution \\[0.3em]
+\textbf{Cloud Backend} & REST API, database, encrypted file storage \\
+\end{tabular}
+\end{block}
+\end{frame}
+
+\begin{frame}{Hybrid Encryption Workflow}
+\begin{block}{Encryption (Upload)}
+\begin{enumerate}
+  \item Generate random AES session key
+  \item Encrypt file data using AES
+  \item Encrypt AES key using user's RSA public key
+  \item Upload encrypted file + encrypted key to server
+\end{enumerate}
+\end{block}
+
+\begin{block}{Decryption (Download)}
+\begin{enumerate}
+  \item Download encrypted file + encrypted AES key
+  \item Decrypt AES key using user's RSA private key
+  \item Decrypt file data using AES key $\rightarrow$ \textbf{Original File}
+\end{enumerate}
+\end{block}
+\end{frame}
+
+\begin{frame}{Controlled File Sharing}
+\begin{block}{Sharing Mechanism}
+\begin{enumerate}
+  \item Owner decrypts AES key with their RSA private key
+  \item Re-encrypts AES key with \textbf{recipient's RSA public key}
+  \item Recipient decrypts AES key with their RSA private key
+  \item Recipient decrypts file using AES key
+\end{enumerate}
+\end{block}
+\vspace{0.3cm}
+\begin{alertblock}{Security Advantage}
+No password or private key is ever shared. Only RSA-encrypted session keys are exchanged.
+\end{alertblock}
+\end{frame}
+
+% =================== 6: WORK PLAN =================== %
+\section{Work Plan}
+
+\begin{frame}{}
+\begin{itemize}
+  \item \textbf{Phase 1}: Literature survey, requirement analysis, system design
+  \item \textbf{Phase 2}: Hybrid encryption engine (AES + RSA)
+  \item \textbf{Phase 3}: User authentication and key management
+  \item \textbf{Phase 4}: Cloud backend --- REST API, database, file storage
+  \item \textbf{Phase 5}: Encrypted file upload and download
+  \item \textbf{Phase 6}: Controlled file sharing
+  \item \textbf{Phase 7}: Testing, validation, and documentation
+\end{itemize}
+\end{frame}
+
+% =================== 7: REFERENCES =================== %
+\section{References}
+\begin{frame}{References}
+    \nocite{*}
+	\bibliography{reference}
+	\bibliographystyle{unsrt}
+\end{frame}
+
+% =================== THANK YOU =================== %
+\begin{frame}{}
+\begin{center}
+\vspace{2cm}
+{\Huge \textbf{Thank You}}
+\end{center}
+\end{frame}
+
+\end{document}

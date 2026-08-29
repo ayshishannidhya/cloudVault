@@ -1,0 +1,11 @@
+\frametitle{System Architecture}
+\begin{block}{System Components}
+\small
+\begin{tabular}{@{}ll@{}}
+\textbf{Client Application} & Login, file upload, download, sharing \\[0.3em]
+\textbf{Authentication Module} & Registration, login, session management \\[0.3em]
+\textbf{Encryption Engine} & AES (data encryption) + RSA (key wrapping) \\[0.3em]
+\textbf{Key Management} & Key generation, storage, distribution \\[0.3em]
+\textbf{Cloud Backend} & REST API, database, encrypted file storage \\
+\end{tabular}
+\end{block}
