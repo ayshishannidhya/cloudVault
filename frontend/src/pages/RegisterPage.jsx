@@ -29,7 +29,7 @@ export default function RegisterPage() {
     try {
       // Step 1: Generate RSA-2048 key pair in browser
       setStatus('Generating RSA-2048 key pair...');
-      const rsaPublicKey = await generateAndStoreKeyPair();
+      const rsaPublicKey = await generateAndStoreKeyPair(username);
 
       // Step 2: Register with server (send only public key)
       setStatus('Creating your secure account...');

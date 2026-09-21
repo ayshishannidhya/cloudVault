@@ -52,7 +52,7 @@ export default function DashboardPage() {
       }
 
       // Step 2: Decrypt file using Web Crypto API (client-side)
-      const decryptedData = await decryptFileComplete(response.data, encryptedAesKey, iv);
+      const decryptedData = await decryptFileComplete(response.data, encryptedAesKey, iv, user.username);
 
       // Step 3: Trigger download of decrypted file
       const blob = new Blob([decryptedData]);
@@ -66,7 +66,35 @@ export default function DashboardPage() {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Download/Decrypt failed:', error);
-      alert('Failed to download file: ' + (error.message || 'Unknown error'));
+      console.error('Error type:', error?.constructor?.name);
+      console.error('Error name:', error?.name);
+      console.error('Error message:', error?.message);
+      console.error('Error string:', String(error));
+
+      // Try to extract a meaningful error message
+      let errorMsg = 'Unknown error';
+      if (error.response) {
+        // Server returned an error response
+        if (error.response.data instanceof ArrayBuffer) {
+          try {
+            const decoder = new TextDecoder('utf-8');
+            const parsed = JSON.parse(decoder.decode(error.response.data));
+            errorMsg = parsed.error || parsed.message || `Server error (${error.response.status})`;
+          } catch {
+            errorMsg = `Server error (${error.response.status})`;
+          }
+        } else {
+          errorMsg = error.response.data?.error || `Server error (${error.response.status})`;
+        }
+      } else if (error.name === 'OperationError') {
+        errorMsg = 'RSA/AES decryption failed. Your private key may not match. Try registering again on this browser.';
+      } else if (error.message) {
+        errorMsg = error.message;
+      } else {
+        errorMsg = String(error);
+      }
+
+      alert('Failed to download file: ' + errorMsg);
     } finally {
       setDownloading(null);
     }

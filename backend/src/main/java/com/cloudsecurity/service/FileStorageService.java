@@ -205,6 +205,7 @@ public class FileStorageService {
     /**
      * Delete a file (owner only).
      */
+    @org.springframework.transaction.annotation.Transactional
     public void deleteFile(Long fileId, Long userId) throws IOException {
         EncryptedFile encFile = fileRepository.findById(fileId)
                 .orElseThrow(() -> new RuntimeException("File not found"));

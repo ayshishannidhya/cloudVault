@@ -14,7 +14,9 @@
 const DB_NAME = 'CloudSecurityKeyStore';
 const DB_VERSION = 1;
 const STORE_NAME = 'keys';
-const PRIVATE_KEY_ID = 'user-rsa-private-key';
+function getPrivateKeyId(username) {
+  return `rsa-private-key-${username}`;
+}
 
 // ==========================================
 // IndexedDB Helper Functions
@@ -64,7 +66,7 @@ async function getFromDB(id) {
  * Generate an RSA-2048-OAEP key pair using the Web Crypto API.
  * Returns the public key as Base64 (SPKI format) and stores the private key in IndexedDB.
  */
-export async function generateAndStoreKeyPair() {
+export async function generateAndStoreKeyPair(username) {
   const keyPair = await window.crypto.subtle.generateKey(
     {
       name: 'RSA-OAEP',
@@ -84,8 +86,8 @@ export async function generateAndStoreKeyPair() {
   const privateKeyBuffer = await window.crypto.subtle.exportKey('pkcs8', keyPair.privateKey);
   const privateKeyBase64 = bufferToBase64(privateKeyBuffer);
 
-  // Store private key in IndexedDB
-  await saveToDB(PRIVATE_KEY_ID, { privateKey: privateKeyBase64 });
+  // Store private key in IndexedDB (per-user, so multiple users can use the same browser)
+  await saveToDB(getPrivateKeyId(username), { privateKey: privateKeyBase64 });
 
   return publicKeyBase64;
 }
@@ -94,10 +96,10 @@ export async function generateAndStoreKeyPair() {
  * Load the user's RSA private key from IndexedDB.
  * Returns a CryptoKey object ready for decryption.
  */
-export async function loadPrivateKey() {
-  const record = await getFromDB(PRIVATE_KEY_ID);
+export async function loadPrivateKey(username) {
+  const record = await getFromDB(getPrivateKeyId(username));
   if (!record || !record.privateKey) {
-    throw new Error('No RSA private key found. Please register again.');
+    throw new Error(`No RSA private key found for "${username}". Please register this account on this browser.`);
   }
 
   const privateKeyBuffer = base64ToBuffer(record.privateKey);
@@ -114,9 +116,9 @@ export async function loadPrivateKey() {
 /**
  * Check if a private key exists in IndexedDB.
  */
-export async function hasPrivateKey() {
+export async function hasPrivateKey(username) {
   try {
-    const record = await getFromDB(PRIVATE_KEY_ID);
+    const record = await getFromDB(getPrivateKeyId(username));
     return !!(record && record.privateKey);
   } catch {
     return false;
@@ -181,9 +183,9 @@ export async function decryptFile(encryptedData, aesKey, ivBase64) {
  * @param {string} ivBase64 - IV (Base64)
  * @returns {ArrayBuffer} Decrypted original file data
  */
-export async function decryptFileComplete(encryptedFileData, encryptedAesKeyBase64, ivBase64) {
-  // Step 1: Load private key from IndexedDB
-  const privateKey = await loadPrivateKey();
+export async function decryptFileComplete(encryptedFileData, encryptedAesKeyBase64, ivBase64, username) {
+  // Step 1: Load private key from IndexedDB (per-user)
+  const privateKey = await loadPrivateKey(username);
 
   // Step 2: Decrypt AES key with RSA private key
   const aesKey = await decryptAESKey(encryptedAesKeyBase64, privateKey);
