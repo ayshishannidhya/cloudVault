@@ -1,0 +1,19 @@
+\frametitle{System Architecture}
+\begin{block}{Three-Tier Design}
+\small
+\begin{tabular}{@{}ll@{}}
+\textbf{Frontend} & React + Vite, Web Crypto API, Axios \\[0.3em]
+\textbf{Backend} & Spring Boot 3 (Java 17), Spring Security, JPA \\[0.3em]
+\textbf{Storage} & H2 Database + Encrypted Files on Disk \\
+\end{tabular}
+\end{block}
+
+\vspace{0.3cm}
+
+\begin{block}{Key Design Decisions}
+\begin{itemize}
+  \item \textbf{Key Envelope Table}: per-file, per-user encrypted AES key entries (OWNER / SERVER / SHARED)
+  \item Server holds its \textbf{own RSA key pair} to enable sharing without involving the owner
+  \item Encrypted AES key and IV sent via \textbf{custom HTTP headers} during download
+\end{itemize}
+\end{block}

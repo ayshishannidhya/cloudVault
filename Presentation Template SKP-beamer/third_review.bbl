@@ -1,0 +1,79 @@
+\begin{thebibliography}{10}
+
+\bibitem{dworkin2007nist}
+Morris~J. Dworkin.
+\newblock Recommendation for block cipher modes of operation:
+  {G}alois/{C}ounter mode ({GCM}) and {GMAC}.
+\newblock In {\em NIST Special Publication 800-38D}. National Institute of
+  Standards and Technology, 2007.
+
+\bibitem{rivest1978rsa}
+Ronald~L. Rivest, Adi Shamir, and Leonard Adleman.
+\newblock A method for obtaining digital signatures and public-key
+  cryptosystems.
+\newblock {\em Communications of the ACM}, 21(2):120--126, 1978.
+
+\bibitem{biryukov2016argon2}
+Alex Biryukov, Daniel Dinu, and Dmitry Khovratovich.
+\newblock Argon2: New generation of memory-hard functions for password hashing
+  and other applications.
+\newblock In {\em IEEE European Symposium on Security and Privacy (EuroS\&P)},
+  pages 292--302. IEEE, 2016.
+
+\bibitem{subashini2011cloud}
+S.~Subashini and V.~Kavitha.
+\newblock A survey on security issues in service delivery models of cloud
+  computing.
+\newblock {\em Journal of Network and Computer Applications}, 34(1):1--11,
+  2011.
+
+\bibitem{kamara2010cryptographic}
+Seny Kamara and Kristin Lauter.
+\newblock Cryptographic cloud storage.
+\newblock In {\em International Conference on Financial Cryptography and Data
+  Security}, pages 136--149. Springer, 2010.
+
+\bibitem{singh2012survey}
+Shilpi Singh, Young-Sik Jeong, and Jong~Hyuk Park.
+\newblock A survey on cloud computing security: Issues, threats, and solutions.
+\newblock {\em Journal of Network and Computer Applications}, 75:200--222,
+  2012.
+
+\bibitem{barker2020nist}
+Elaine Barker.
+\newblock Recommendation for key management: Part 1 -- general.
+\newblock In {\em NIST Special Publication 800-57 Part 1, Revision 5}. National
+  Institute of Standards and Technology, 2020.
+
+\bibitem{tawalbeh2015efficient}
+Lo'ai Tawalbeh, Nour~S. Darwazeh, Randa~S. Al-Qassas, and Fahad AlDosari.
+\newblock An efficient hybrid cryptography scheme for cloud data security using
+  {AES} and {RSA}.
+\newblock {\em International Journal of Security and Its Applications},
+  9(12):121--134, 2015.
+
+\bibitem{gupta2021hybrid}
+Neha Gupta and Sanjay~Kumar Sharma.
+\newblock A hybrid encryption algorithm based on {RSA} and diffie-hellman for
+  cloud computing security.
+\newblock {\em International Journal of Information Security and Privacy},
+  15(4):64--78, 2021.
+
+\bibitem{hashizume2013analysis}
+Keiko Hashizume, David~G. Rosado, Eduardo Fern{\'a}ndez-Medina, and Eduardo~B.
+  Fernandez.
+\newblock An analysis of security issues for cloud computing.
+\newblock In {\em Journal of Internet Services and Applications}, volume~4,
+  pages 1--13. Springer, 2013.
+
+\bibitem{kumar2019review}
+Pradeep Kumar, Pethuru Raj, and Pandya Jelciana.
+\newblock A review on data security approaches in cloud computing.
+\newblock {\em IEEE Access}, 7:48268--48285, 2019.
+
+\bibitem{shamir1979share}
+Adi Shamir.
+\newblock How to share a secret.
+\newblock {\em Communications of the ACM}, 22(11):612--613, 1979.
+
+\end{thebibliography}

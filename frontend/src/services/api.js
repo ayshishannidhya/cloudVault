@@ -75,4 +75,14 @@ export const shareAPI = {
   getSharedUsers: (fileId) => API.get(`/share/${fileId}/users`),
 };
 
+// ==========================================
+// Audit Log API
+// ==========================================
+
+export const auditAPI = {
+  getMyLogs: () => API.get('/audit/my-logs'),
+  getFileLogs: (fileId) => API.get(`/audit/file/${fileId}`),
+  getRecentLogs: () => API.get('/audit/recent'),
+};
+
 export default API;

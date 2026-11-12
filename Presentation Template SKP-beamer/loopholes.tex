@@ -1,0 +1,245 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{amssymb}
+\usepackage{fancyhdr}
+\usepackage{tcolorbox}
+
+\hypersetup{colorlinks=true, linkcolor=blue!60!black, urlcolor=blue!60!black}
+
+\definecolor{redbg}{HTML}{FDE8E8}
+\definecolor{redborder}{HTML}{E53E3E}
+\definecolor{greenbg}{HTML}{E6FFED}
+\definecolor{greenborder}{HTML}{38A169}
+\definecolor{bluebg}{HTML}{EBF5FF}
+\definecolor{blueborder}{HTML}{3182CE}
+\definecolor{yellowbg}{HTML}{FFFBEB}
+\definecolor{yellowborder}{HTML}{D69E2E}
+
+\tcbuselibrary{skins,breakable}
+
+\newtcolorbox{importantbox}{
+  colback=redbg, colframe=redborder, fonttitle=\bfseries,
+  title=Important, breakable, left=4pt, right=4pt, top=4pt, bottom=4pt
+}
+\newtcolorbox{tipbox}{
+  colback=greenbg, colframe=greenborder, fonttitle=\bfseries,
+  title=Tip, breakable, left=4pt, right=4pt, top=4pt, bottom=4pt
+}
+
+\titleformat{\section}{\Large\bfseries\color{blue!60!black}}{}{0em}{}[\titlerule]
+\titleformat{\subsection}{\large\bfseries}{}{0em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{black!70}}{}{0em}{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\textcolor{gray}{CloudVault --- Security Analysis}}
+\lhead{\textcolor{gray}{PPD-II Third Review}}
+\cfoot{\thepage}
+
+\begin{document}
+
+\begin{center}
+{\LARGE\bfseries CloudVault --- Real Loopholes \& Faculty Q\&A Guide}\\[0.5cm]
+{\large PID: 23CSEP03 \hspace{0.5cm}|\hspace{0.5cm} PPD-II Third Review \hspace{0.5cm}|\hspace{0.5cm} November 2026}
+\end{center}
+
+\vspace{0.3cm}
+
+\begin{importantbox}
+There \textbf{are} real security loopholes in CloudVault. Being upfront about them shows technical maturity. Below is the honest analysis + how to answer each question confidently.
+\end{importantbox}
+
+\vspace{0.3cm}
+
+% ============================================================ %
+\section{The 3 REAL Loopholes}
+% ============================================================ %
+
+\subsection{Loophole 1: Server Sees Plaintext During Upload}
+
+The user uploads a \textbf{plaintext file} to the server, and the \textbf{server encrypts it}. This means the server momentarily has access to the original file. A truly end-to-end encrypted system would encrypt the file \textbf{in the browser before upload}.
+
+\textbf{Impact:} A compromised or malicious server could save/read files before encrypting them.
+
+\textbf{What to say:} \textit{``We chose server-side encryption for simplicity. In a production system, we would add client-side encryption before upload using the Web Crypto API --- the same API we already use for decryption.''}
+
+\subsection{Loophole 2: Server Holds a Copy of Every AES Key (SERVER Entry)}
+
+The Key Envelope Table stores a \texttt{SERVER} entry for each file --- the AES key encrypted with the server's RSA public key. This means the \textbf{server can decrypt any file at any time} using its own RSA private key.
+
+\textbf{Impact:} This is NOT truly zero-knowledge. The server has the ability to access all files.
+
+\textbf{What to say:} \textit{``The SERVER key entry exists to enable sharing without involving the file owner. This is a deliberate trade-off: we chose usability (zero-effort sharing) over pure zero-knowledge. In a stricter model, the owner would need to be online to re-wrap the AES key for each recipient.''}
+
+\subsection{Loophole 3: Losing Browser Data = Losing Private Key Forever}
+
+The RSA private key is stored \textbf{only} in IndexedDB. If the user clears browser data, uses a different browser, or formats their PC --- \textbf{all their files become permanently inaccessible}.
+
+\textbf{Impact:} No key recovery or backup mechanism exists.
+
+\textbf{What to say:} \textit{``This is a known limitation. Our next step would be implementing encrypted key export --- the user downloads their private key as an encrypted file (protected by a passphrase) that they can import on another device.''}
+
+\vspace{0.5cm}
+
+% ============================================================ %
+\section{Answers to All 10 Faculty Questions}
+% ============================================================ %
+
+\subsection{Q1: What are the potential loopholes in your project?}
+
+\textbf{Answer:} There are three main ones:
+\begin{enumerate}
+  \item The server sees plaintext files during upload (not true E2E encryption)
+  \item The server holds a copy of the AES key for each file (SERVER entry), so it \textit{can} decrypt files
+  \item If the user clears browser data, their RSA private key is permanently lost (no export/backup feature)
+\end{enumerate}
+
+These are \textbf{deliberate design trade-offs} --- server-side encryption simplifies the architecture, the SERVER key enables zero-effort sharing, and browser-only keys ensure the private key never travels over the network.
+
+\subsection{Q2: What are the major security vulnerabilities in CloudVault?}
+
+\textbf{Answer:}
+\begin{itemize}
+  \item \textbf{XSS (Cross-Site Scripting):} If an attacker injects malicious JavaScript into the page, they could access IndexedDB and steal the RSA private key. \textit{Mitigation: React auto-escapes output, and we don't use \texttt{dangerouslySetInnerHTML}.}
+  \item \textbf{No rate limiting:} The login endpoint has no brute-force protection. \textit{Mitigation: BCrypt's intentional slowness makes brute-force impractical, but adding rate limiting would be better.}
+  \item \textbf{JWT in localStorage:} Vulnerable to XSS. \textit{Mitigation: Using httpOnly cookies would be more secure, but complicates CORS.}
+  \item \textbf{H2 database:} Not suitable for production. The database file on disk is unencrypted.
+\end{itemize}
+
+\subsection{Q3: Can an attacker bypass your encryption mechanism?}
+
+\textbf{Answer:} No, the encryption itself (AES-256-GCM + RSA-2048-OAEP) is \textbf{cryptographically secure} and cannot be brute-forced with current technology. However, an attacker doesn't need to break the encryption if they can:
+\begin{itemize}
+  \item Compromise the \textbf{server} (which holds SERVER key entries)
+  \item Exploit an \textbf{XSS vulnerability} to steal the private key from IndexedDB
+  \item Intercept the \textbf{plaintext file during upload} (before server encrypts it)
+\end{itemize}
+
+The encryption algorithm is strong; the potential weaknesses are in the \textbf{architecture around it}.
+
+\subsection{Q4: What happens if the user's browser gets compromised?}
+
+\textbf{Answer:} This is serious. If an attacker has access to the user's browser (via XSS or malware):
+\begin{itemize}
+  \item They can read the \textbf{RSA private key from IndexedDB}
+  \item They can intercept the \textbf{JWT token from localStorage}
+  \item With both, they can download and decrypt \textbf{all of the user's files}
+\end{itemize}
+
+\textbf{Mitigation we'd add:}
+\begin{itemize}
+  \item Content Security Policy (CSP) headers to prevent XSS
+  \item Subresource Integrity (SRI) for all scripts
+  \item Encrypting the IndexedDB private key with a passphrase
+\end{itemize}
+
+\subsection{Q5: Can an attacker steal the AES encryption key?}
+
+\textbf{Answer:} The AES key is \textbf{never stored in plaintext} --- it only exists in encrypted (wrapped) form in the database. To steal it, an attacker would need:
+\begin{itemize}
+  \item The \textbf{user's RSA private key} (to unwrap the OWNER entry) --- stored only in the browser
+  \item OR the \textbf{server's RSA private key} (to unwrap the SERVER entry) --- stored as a file on the server
+\end{itemize}
+
+If neither key is compromised, the AES key cannot be recovered.
+
+\subsection{Q6: What happens if the RSA private key is compromised?}
+
+\textbf{Answer:}
+\begin{itemize}
+  \item \textbf{User's private key compromised:} Attacker can decrypt all files owned by or shared with that user. \textit{No forward secrecy --- all past files are exposed.}
+  \item \textbf{Server's private key compromised:} Attacker can decrypt the SERVER key entry for \textbf{every file in the system} $\rightarrow$ full breach.
+\end{itemize}
+
+\textbf{Mitigation:} Key rotation. Periodically generate new RSA keys and re-encrypt all key entries. We haven't implemented this yet, but it's the standard solution.
+
+\subsection{Q7: Can your system prevent all types of cyberattacks?}
+
+\textbf{Answer:} \textbf{No system can prevent all cyberattacks.} CloudVault protects against:
+\begin{itemize}
+  \item[$\checkmark$] Unauthorized file access (JWT + per-user key entries)
+  \item[$\checkmark$] Data at rest exposure (AES-256-GCM encryption)
+  \item[$\checkmark$] Password theft (BCrypt hashing)
+  \item[$\checkmark$] Man-in-the-middle (HTTPS + encrypted file transfer)
+\end{itemize}
+
+It does \textbf{NOT} protect against:
+\begin{itemize}
+  \item[$\times$] Browser-level attacks (XSS, malware)
+  \item[$\times$] Server compromise (server holds key copies)
+  \item[$\times$] Social engineering
+  \item[$\times$] DDoS attacks (no rate limiting)
+\end{itemize}
+
+\subsection{Q8: What are the weaknesses of your current security architecture?}
+
+\textbf{Answer:}
+\begin{enumerate}
+  \item \textbf{Not true E2E encryption} --- server encrypts, so it sees plaintext during upload
+  \item \textbf{Server is a single point of trust} --- it holds AES key copies and can decrypt any file
+  \item \textbf{No key backup/recovery} --- browser data loss = permanent file loss
+  \item \textbf{No key rotation} --- compromised keys expose all historical files
+  \item \textbf{No audit logging} --- no record of who accessed what and when
+  \item \textbf{H2 database} --- unencrypted, single-file, not production-grade
+\end{enumerate}
+
+\subsection{Q9: Can an attacker access files after access revocation?}
+
+\textbf{Answer:} After revocation, the SHARED key entry is \textbf{deleted from the database}, so the recipient can no longer request the encrypted AES key from the server. However:
+
+\begin{itemize}
+  \item If the recipient \textbf{already downloaded and decrypted} the file before revocation, they have the plaintext --- revocation cannot undo that.
+  \item If the recipient \textbf{cached the decrypted AES key} in memory during their session, they could still decrypt the file.
+  \item The \textbf{file itself is NOT re-encrypted} after revocation (only the key entry is deleted).
+\end{itemize}
+
+\textbf{What to say:} \textit{``Revocation is effective for future access but cannot retroactively protect data that was already downloaded. This is a fundamental limitation shared by all file-sharing systems, including Google Drive and Dropbox.''}
+
+\subsection{Q10: What are the possible loopholes in your file-sharing mechanism?}
+
+\textbf{Answer:}
+\begin{enumerate}
+  \item \textbf{Server mediates sharing} --- the server decrypts the AES key to re-wrap it. A truly zero-knowledge system would use proxy re-encryption so the server never sees the plaintext AES key.
+  \item \textbf{No sharing permissions} --- shared users get full read access; there's no ``view-only'' or ``time-limited'' sharing.
+  \item \textbf{No notification} --- the recipient isn't notified when a file is shared with them.
+  \item \textbf{Trust in server} --- the server could share files with any user without the owner's knowledge (since it holds the SERVER key entry).
+\end{enumerate}
+
+\vspace{0.5cm}
+
+% ============================================================ %
+\section{What To Do Next --- Improvements}
+% ============================================================ %
+
+If faculty asks ``what would you improve?'', mention these:
+
+\begin{center}
+\begin{tabular}{@{}llp{8cm}@{}}
+\toprule
+\textbf{Priority} & \textbf{Improvement} & \textbf{Description} \\
+\midrule
+High & Client-side encryption before upload & True E2E --- encrypt in browser before sending to server \\[0.3em]
+High & Encrypted private key export/import & Backup key as passphrase-protected file \\[0.3em]
+Medium & Rate limiting on login & Prevent brute-force attacks \\[0.3em]
+Medium & Move JWT to httpOnly cookies & Prevent XSS token theft \\[0.3em]
+Medium & Audit logging & Record who accessed what and when \\[0.3em]
+Low & Key rotation mechanism & Re-encrypt keys periodically \\[0.3em]
+Low & Proxy re-encryption for sharing & Eliminate SERVER key entry entirely \\[0.3em]
+Low & Switch H2 to PostgreSQL & Production-ready database \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.5cm}
+
+\begin{tipbox}
+\textbf{Faculty impression strategy:} Don't hide the loopholes. Say: \textit{``We identified these limitations during development and made conscious trade-offs between security and usability. Here's what we'd improve in the next iteration...''} This shows you \textbf{understand} security, not just code.
+\end{tipbox}
+
+\end{document}
+
